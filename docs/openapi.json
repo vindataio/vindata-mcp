@@ -1,0 +1,156 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "VINdata API",
+    "version": "1.0.0",
+    "description": "VINdata provides VIN decoding and European vehicle data for automotive workflows. The API supports EU-focused vehicle intelligence use cases for car dealers, automotive platforms, and developer integrations."
+  },
+  "servers": [
+    {
+      "url": "https://gxvtafqbraaifsnthsyj.supabase.co/functions/v1",
+      "description": "VINdata Supabase API"
+    }
+  ],
+  "paths": {
+    "/api-vin-decode": {
+      "post": {
+        "summary": "Decode VIN",
+        "description": "Decode a 17-character VIN using the VINdata decoder API and return structured vehicle information.",
+        "operationId": "decodeVin",
+        "tags": [
+          "VIN Decoding"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecodeVinRequest"
+              },
+              "examples": {
+                "bmwGermany": {
+                  "summary": "BMW Germany VIN example",
+                  "value": {
+                    "vin": "WBA3A5C50DF356741"
+                  }
+                },
+                "renaultFrance": {
+                  "summary": "Renault France VIN example",
+                  "value": {
+                    "vin": "VF1RFB00367482918"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "VIN decoded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecodeVinResponse"
+                },
+                "example": {
+                  "vin": "WBA3A5C50DF356741",
+                  "make": "BMW",
+                  "model": "3 Series",
+                  "year": 2013,
+                  "market": "EU"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid VIN or malformed request"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Upstream decoder quota, billing, or subscription issue"
+          },
+          "500": {
+            "description": "VIN decoding failed"
+          },
+          "502": {
+            "description": "Bad gateway or upstream VIN decoder failure"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "VINdata API key"
+      }
+    },
+    "schemas": {
+      "DecodeVinRequest": {
+        "type": "object",
+        "required": [
+          "vin"
+        ],
+        "properties": {
+          "vin": {
+            "type": "string",
+            "minLength": 17,
+            "maxLength": 17,
+            "description": "17-character Vehicle Identification Number.",
+            "example": "WBA3A5C50DF356741"
+          }
+        }
+      },
+      "DecodeVinResponse": {
+        "type": "object",
+        "description": "Structured decoded vehicle data returned by VINdata.",
+        "additionalProperties": true,
+        "properties": {
+          "vin": {
+            "type": "string",
+            "example": "WBA3A5C50DF356741"
+          },
+          "make": {
+            "type": "string",
+            "example": "BMW"
+          },
+          "model": {
+            "type": "string",
+            "example": "3 Series"
+          },
+          "year": {
+            "type": "integer",
+            "example": 2013
+          },
+          "market": {
+            "type": "string",
+            "example": "EU"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Failed to decode VIN from upstream service."
+          },
+          "details": {
+            "type": "string",
+            "example": "Decode failed: 402"
+          }
+        }
+      }
+    }
+  }
+}
